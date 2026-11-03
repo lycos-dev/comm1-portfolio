@@ -1,0 +1,17 @@
+import { useMemo, useState } from 'react';
+import { ChevronDown, Search, X, ArrowUpRight } from 'lucide-react';
+import PageHeading from '../components/PageHeading.jsx';
+import { experiences } from '../data/portfolio.js';
+import { filterExperience } from '../data/helpers.js';
+import { profile } from '../data/profile.js';
+
+export default function Experience() {
+  const [query, setQuery] = useState(''); const [expanded, setExpanded] = useState(new Set(['Remedy Lane Co']));
+  const filtered = useMemo(() => filterExperience(experiences, query), [query]);
+  const toggle = company => setExpanded(previous => { const next = new Set(previous); if (next.has(company)) next.delete(company); else next.add(company); return next; });
+  return <div className="container section-content"><PageHeading id="experience-title" label="Professional experience" title={<>A track record of<br />following through.</>} description="Freelance and contract work across brands, industries, and time zones." />
+    <div className="experience-layout"><aside className="experience-intro"><span className="pill">November 2023 — October 2026</span><h2>Different brands.<br />The same care.</h2><p>From first introductions to campaign reporting, I bring consistency to the details that keep partnerships moving.</p><p className="small">Some engagements ran concurrently. Dates follow the supplied résumé.</p><a className="text-link" href={profile.resume} download>Download full résumé <ArrowUpRight size={17} /></a><div className="references-note"><strong>Professional references</strong><p>Available on request.</p></div></aside><div><div className="experience-toolbar"><label className="search-field"><Search size={17} /><span className="sr-only">Search experience</span><input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search a brand, role, or year" />{query && <button aria-label="Clear search" onClick={() => setQuery('')}><X size={16} /></button>}</label><button className="text-button" onClick={() => setExpanded(expanded.size === experiences.length ? new Set() : new Set(experiences.map(job => job.company)))}>{expanded.size === experiences.length ? 'Collapse all' : 'Expand all'}</button></div><p className="result-count" role="status">{filtered.length} of {experiences.length} engagements</p>
+      <div className="timeline">{filtered.map(job => { const index = experiences.indexOf(job); const open = expanded.has(job.company); return <article className={`timeline-card ${open ? 'expanded' : ''}`} key={job.company}><button className="timeline-toggle" aria-expanded={open} aria-controls={`job-${index}`} onClick={() => toggle(job.company)}><span className="timeline-number">{String(index + 1).padStart(2, '0')}</span><span className="timeline-text"><span className="eyebrow muted">{job.date}</span><strong>{job.company}</strong><span>{job.title}</span><span className="job-kind">{job.kind}</span></span><ChevronDown size={20} className="chevron" /></button><div id={`job-${index}`} className="timeline-detail" hidden={!open}><ul>{job.bullets.map(bullet => <li key={bullet}>{bullet}</li>)}</ul></div></article>; })}</div>
+      {!filtered.length && <div className="empty-state"><h3>No matching experience.</h3><p>Try a company name, “outreach,” or a year.</p><button className="button button-outline" onClick={() => setQuery('')}>Show all experience</button></div>}
+    </div></div></div>;
+}
